@@ -4,81 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventPro | Team Collaborative Dashboard</title>
+    <!-- Tailwind CSS (via CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        
-        :root {
-            --bg-black: #000000;
-            --card-gray: #0a0a0a;
-            --border-gray: #1e1e1e;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-black);
-            color: #ffffff;
-            -webkit-font-smoothing: antialiased;
-            letter-spacing: -0.02em;
-        }
-
-        .minimal-card {
-            background: var(--card-gray);
-            border: 1px solid var(--border-gray);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .minimal-card:hover {
-            border-color: #333333;
-        }
-
-        .nav-btn.active {
-            color: white;
-            background: #111;
-        }
-
-        .nav-btn.active i {
-            color: #3b82f6;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 250px;
-            width: 100%;
-        }
-
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 300px;
-            }
-        }
-
-        input, select {
-            background: #000 !important;
-            border: 1px solid var(--border-gray) !important;
-            color: white !important;
-        }
-
-        .loading-skeleton {
-            background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .tracking-tightest { letter-spacing: -0.05em; }
-
-        /* Mobile Sidebar Transitions */
-        #sidebar {
-            transition: transform 0.3s ease-in-out;
-        }
-    </style>
+    <!-- Link to your external CSS file -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="selection:bg-white selection:text-black">
 
@@ -139,20 +72,20 @@
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"></div>
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 lg:ml-64 p-6 md:p-12 lg:p-20 mt-16 lg:mt-0">
+        <main class="flex-1 lg:ml-64 p-4 md:p-12 lg:p-20 mt-16 lg:mt-0">
             
             <!-- PAGE 1: BUDGET INTEL (Member 1) -->
             <section id="page-budget" class="page-content block">
-                <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 lg:mb-16">
+                <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-16">
                     <div>
                         <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Financials</h1>
-                        <p class="text-neutral-500 mt-2 md:mt-4 text-sm md:text-base">Member 1: Global Asset & Liquidity Monitoring.</p>
+                        <p class="text-neutral-500 mt-2 md:mt-4 text-xs md:text-base">Member 1: Global Asset & Liquidity Monitoring.</p>
                     </div>
-                    <div class="flex items-center gap-3 md:gap-4">
-                        <button onclick="toggleModal('configModal')" class="bg-neutral-900 text-white p-3 md:p-4 rounded-full border border-neutral-800 hover:border-neutral-600 transition-all">
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <button onclick="toggleModal('configModal')" class="bg-neutral-900 text-white p-3 md:p-4 rounded-full border border-neutral-800 hover:border-neutral-600 transition-all flex-shrink-0">
                             <i data-lucide="settings" class="w-5 h-5"></i>
                         </button>
-                        <button onclick="toggleModal('expenseModal')" class="flex-1 md:flex-none bg-white text-black px-6 md:px-10 py-3 md:py-4 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-neutral-200 transition-all">
+                        <button onclick="toggleModal('expenseModal')" class="flex-1 md:flex-none bg-white text-black px-4 md:px-10 py-3 md:py-4 rounded-full text-[9px] md:text-xs font-black uppercase tracking-widest hover:bg-neutral-200 transition-all whitespace-nowrap">
                             Add Transaction
                         </button>
                     </div>
@@ -195,7 +128,7 @@
             <section id="page-resources" class="page-content hidden">
                 <header class="mb-12 lg:mb-16">
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Resources</h1>
-                    <p class="text-neutral-500 mt-2 md:mt-4 text-sm md:text-base">Member 2: Inventory & Staff Deployment Analytics.</p>
+                    <p class="text-neutral-500 mt-2 md:mt-4 text-xs md:text-base">Member 2: Inventory & Staff Deployment Analytics.</p>
                 </header>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
@@ -230,11 +163,11 @@
                 </div>
             </section>
 
-            <!-- PAGE 3: PARTNER NETWORK (Member 3 - With Data Fetching) -->
+            <!-- PAGE 3: PARTNER NETWORK (Member 3) -->
             <section id="page-network" class="page-content hidden">
                 <header class="mb-12 lg:mb-16">
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Network</h1>
-                    <p class="text-neutral-500 mt-2 md:mt-4 text-sm md:text-base">Member 3: External Vendor API & Sponsor Directory.</p>
+                    <p class="text-neutral-500 mt-2 md:mt-4 text-xs md:text-base">Member 3: External Vendor API & Sponsor Directory.</p>
                 </header>
 
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
@@ -250,7 +183,7 @@
         </main>
     </div>
 
-    <!-- MODALS (Budget & Expense) -->
+    <!-- MODALS -->
     <div id="configModal" class="fixed inset-0 bg-black/98 backdrop-blur-md z-[100] hidden items-center justify-center p-4 md:p-6 overflow-y-auto">
         <div class="minimal-card w-full max-w-4xl p-6 md:p-16 rounded-sm my-8">
             <div class="flex justify-between mb-8 md:mb-12">
@@ -291,244 +224,7 @@
         </div>
     </div>
 
-    <script>
-        // --- State ---
-        const INITIAL_STATE = {
-            totalBudgetLimit: 2000000,
-            allocated: { 'Venue': 600000, 'Catering': 400000, 'Marketing': 300000, 'Talent': 300000, 'Tech': 400000 },
-            expenses: [
-                { id: '101', category: 'Venue', desc: 'Main Hall Deposit', amount: 300000 },
-                { id: '102', category: 'Tech', desc: 'LED Wall Hire', amount: 150000 }
-            ],
-            sponsorship: 800000
-        };
-
-        let state = JSON.parse(localStorage.getItem('team_event_pro')) || INITIAL_STATE;
-        let charts = {};
-        let isSidebarOpen = false;
-
-        // --- Responsive Logic ---
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            const menuIcon = document.getElementById('menu-icon');
-            
-            isSidebarOpen = !isSidebarOpen;
-            
-            if (isSidebarOpen) {
-                sidebar.style.transform = 'translateX(0)';
-                overlay.classList.remove('hidden');
-                menuIcon.setAttribute('data-lucide', 'x');
-            } else {
-                sidebar.style.transform = 'translateX(-100%)';
-                overlay.classList.add('hidden');
-                menuIcon.setAttribute('data-lucide', 'menu');
-            }
-            lucide.createIcons();
-        }
-
-        // --- Navigation Logic ---
-        function navigate(pageId) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('page-' + pageId).classList.remove('hidden');
-            document.getElementById('btn-' + pageId).classList.add('active');
-            
-            if (window.innerWidth < 1024 && isSidebarOpen) toggleSidebar();
-            
-            if(pageId === 'network') fetchExternalPartners();
-            updateDashboard();
-            scrollToTop();
-        }
-
-        // --- Data Fetching (Member 3 Logic) ---
-        async function fetchExternalPartners() {
-            const grid = document.getElementById('partner-grid');
-            grid.innerHTML = Array(6).fill(0).map(() => `<div class="minimal-card p-6 md:p-10 h-48 loading-skeleton rounded-sm"></div>`).join('');
-            
-            try {
-                const response = await fetch('https://jsonplaceholder.typicode.com/users');
-                const data = await response.json();
-                
-                grid.innerHTML = data.slice(0, 6).map(partner => `
-                    <div class="minimal-card p-6 md:p-10 rounded-sm">
-                        <p class="text-[10px] font-black text-neutral-600 uppercase tracking-widest mb-4">Partner #${partner.id}</p>
-                        <h4 class="text-lg md:text-xl font-black mb-1">${partner.name}</h4>
-                        <p class="text-xs text-neutral-500 mb-6 font-medium">${partner.company.name}</p>
-                        <div class="flex items-center gap-2 text-[10px] font-bold text-blue-500">
-                            <i data-lucide="verified" class="w-3 h-3"></i> VERIFIED VENDOR
-                        </div>
-                    </div>
-                `).join('');
-                lucide.createIcons();
-            } catch (error) {
-                grid.innerHTML = `<p class="text-red-500 font-bold p-10">Error fetching external partner data.</p>`;
-            }
-        }
-
-        // --- Core Functions ---
-        function init() {
-            lucide.createIcons();
-            populateConfigForm();
-            populateCategorySelects();
-            updateDashboard();
-        }
-
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            m.classList.toggle('hidden');
-            m.classList.toggle('flex');
-            
-            // Prevent body scroll when modal is open
-            if (!m.classList.contains('hidden')) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = '';
-            }
-        }
-
-        function populateConfigForm() {
-            const container = document.getElementById('allocationInputs');
-            container.innerHTML = Object.entries(state.allocated).map(([cat, val]) => `
-                <div class="p-4 md:p-5 bg-neutral-950 rounded-sm border border-neutral-900">
-                    <label class="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-2">${cat}</label>
-                    <input type="number" data-cat="${cat}" class="alloc-input w-full bg-transparent border-none p-0 text-white font-black text-base md:text-lg focus:ring-0" value="${val}">
-                </div>
-            `).join('');
-            document.getElementById('configTotalBudget').value = state.totalBudgetLimit;
-            document.getElementById('configSponsorship').value = state.sponsorship;
-        }
-
-        function populateCategorySelects() {
-            const s = document.getElementById('expCategory');
-            s.innerHTML = Object.keys(state.allocated).map(cat => `<option value="${cat}">${cat}</option>`).join('');
-        }
-
-        function updateDashboard() {
-            const totalUtilized = state.expenses.reduce((a, b) => a + b.amount, 0);
-            const balance = state.totalBudgetLimit - totalUtilized;
-            const catTotals = {};
-            Object.keys(state.allocated).forEach(cat => catTotals[cat] = 0);
-            state.expenses.forEach(ex => catTotals[ex.category] += ex.amount);
-
-            // Render KPIs
-            const kpiContainer = document.getElementById('kpi-container');
-            if(kpiContainer) {
-                const kpis = [
-                    { l: 'Budget Limit', v: state.totalBudgetLimit },
-                    { l: 'Capital Utilized', v: totalUtilized },
-                    { l: 'Sponsorship', v: state.sponsorship },
-                    { l: 'Net Available', v: balance, u: balance < 0 }
-                ];
-                kpiContainer.innerHTML = kpis.map(k => `
-                    <div class="minimal-card p-6 md:p-12 rounded-sm">
-                        <p class="text-neutral-500 text-[10px] font-black uppercase tracking-widest mb-4 md:mb-6">${k.l}</p>
-                        <h3 class="text-2xl md:text-3xl font-black ${k.u ? 'text-red-500' : ''}">₹${Math.abs(k.v).toLocaleString('en-IN')}</h3>
-                    </div>
-                `).join('');
-            }
-
-            // Render Table
-            const body = document.getElementById('transaction-body');
-            if(body) {
-                body.innerHTML = state.expenses.slice().reverse().map(ex => `
-                    <tr class="border-b border-neutral-900 group hover:bg-neutral-900/50 transition-all">
-                        <td class="px-6 md:px-10 py-5 md:py-7 font-mono text-[10px] text-neutral-600">REF-${ex.id}</td>
-                        <td class="px-6 md:px-10 py-5 md:py-7 text-[10px] font-black text-white uppercase">${ex.category}</td>
-                        <td class="px-6 md:px-10 py-5 md:py-7 text-neutral-500 font-medium">${ex.desc}</td>
-                        <td class="px-6 md:px-10 py-5 md:py-7 text-right font-black text-white">₹${ex.amount.toLocaleString('en-IN')}</td>
-                        <td class="px-6 md:px-10 py-5 md:py-7 text-center">
-                            <button onclick="deleteExpense('${ex.id}')" class="text-neutral-800 hover:text-white transition-colors p-2"><i data-lucide="x" class="w-3 h-3 mx-auto"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-                document.getElementById('transaction-count').innerText = `${state.expenses.length} RECORDS`;
-                lucide.createIcons();
-            }
-
-            // Render Charts
-            renderCharts(catTotals);
-            localStorage.setItem('team_event_pro', JSON.stringify(state));
-        }
-
-        function renderCharts(catTotals) {
-            const labels = Object.keys(state.allocated);
-            const ctxA = document.getElementById('allocationChart');
-            const ctxC = document.getElementById('categoryChart');
-            if(!ctxA || !ctxC) return;
-
-            if (charts.A) charts.A.destroy();
-            charts.A = new Chart(ctxA, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [
-                        { label: 'Allocated', data: labels.map(l => state.allocated[l]), backgroundColor: '#111', barThickness: 8 },
-                        { label: 'Utilized', data: labels.map(l => catTotals[l]), backgroundColor: '#fff', barThickness: 8 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#444', font: { size: 8, weight: 800 } } } }
-                }
-            });
-
-            if (charts.C) charts.C.destroy();
-            charts.C = new Chart(ctxC, {
-                type: 'doughnut',
-                data: {
-                    labels,
-                    datasets: [{
-                        data: labels.map(l => catTotals[l] || 1),
-                        backgroundColor: ['#fff', '#999', '#666', '#333', '#111'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '90%', plugins: { legend: { display: false } } }
-            });
-        }
-
-        // --- Handlers ---
-        document.getElementById('configForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            document.querySelectorAll('.alloc-input').forEach(i => state.allocated[i.dataset.cat] = parseFloat(i.value) || 0);
-            state.totalBudgetLimit = parseFloat(document.getElementById('configTotalBudget').value) || 0;
-            state.sponsorship = parseFloat(document.getElementById('configSponsorship').value) || 0;
-            toggleModal('configModal');
-            updateDashboard();
-        });
-
-        document.getElementById('expenseForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            state.expenses.push({
-                id: Math.floor(100+Math.random()*899).toString(),
-                category: document.getElementById('expCategory').value,
-                desc: document.getElementById('expDesc').value,
-                amount: parseFloat(document.getElementById('expAmount').value)
-            });
-            e.target.reset();
-            toggleModal('expenseModal');
-            updateDashboard();
-        });
-
-        function deleteExpense(id) { state.expenses = state.expenses.filter(ex => ex.id !== id); updateDashboard(); }
-        function resetAllData() { if(confirm('RESET?')) { state = JSON.parse(JSON.stringify(INITIAL_STATE)); updateDashboard(); } }
-        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-        
-        window.onload = init;
-
-        // Handle window resize for sidebar
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                const sidebar = document.getElementById('sidebar');
-                const overlay = document.getElementById('sidebar-overlay');
-                sidebar.style.transform = 'translateX(0)';
-                overlay.classList.add('hidden');
-                isSidebarOpen = false;
-            } else if (!isSidebarOpen) {
-                document.getElementById('sidebar').style.transform = 'translateX(-100%)';
-            }
-        });
-    </script>
+    <!-- Link to your external JS file -->
+    <script src="script.js"></script>
 </body>
 </html>
