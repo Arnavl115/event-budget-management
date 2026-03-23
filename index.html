@@ -4,20 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventPro | Team Collaborative Dashboard</title>
-    <!-- Tailwind CSS (via CDN) -->
+   
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Link to your external CSS file -->
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="selection:bg-white selection:text-black">
 
-    <div class="flex min-h-screen relative overflow-x-hidden">
-        
-        <!-- MOBILE TOP BAR -->
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="fixed inset-0 bg-black z-[200] flex items-center justify-center p-6">
+        <div class="minimal-card w-full max-w-md p-8 md:p-12 rounded-sm text-center bg-black">
+            <h2 class="text-4xl font-black mb-2 text-white tracking-tighter">EVENTPRO</h2>
+            <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-8">System Access Required</p>
+            
+            <form id="auth-form" class="space-y-4 mb-6">
+                <div>
+                    <input type="email" id="auth-email" class="w-full px-5 py-4 text-sm font-bold bg-neutral-900 border border-neutral-800 rounded-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors" placeholder="Email Address" required>
+                </div>
+                <div>
+                    <input type="password" id="auth-password" class="w-full px-5 py-4 text-sm font-bold bg-neutral-900 border border-neutral-800 rounded-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors" placeholder="Password" required>
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="button" id="btn-signin" class="flex-1 bg-white text-black py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-neutral-200 transition-all">Sign In</button>
+                    <button type="button" id="btn-signup" class="flex-1 bg-neutral-900 text-white border border-neutral-800 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all">Sign Up</button>
+                </div>
+            </form>
+            
+            <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-neutral-900"></div>
+                <span class="flex-shrink-0 mx-4 text-neutral-600 text-[10px] font-bold uppercase tracking-widest">OR</span>
+                <div class="flex-grow border-t border-neutral-900"></div>
+            </div>
+            
+            <button id="btn-google-signin" type="button" class="w-full flex items-center justify-center gap-3 bg-white text-black py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-neutral-200 transition-all mt-6">
+                <i data-lucide="chrome" class="w-4 h-4"></i> Sign in with Google
+            </button>
+            <p id="auth-error" class="text-red-500 text-[10px] uppercase font-bold tracking-widest mt-6 hidden"></p>
+        </div>
+    </div>
+
+    <!-- App Content Wrapper -->
+    <div id="app-content" class="flex min-h-screen relative overflow-x-hidden hidden">
         <div class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-black border-b border-neutral-900 z-[60] flex items-center justify-between px-6">
             <div class="flex items-center gap-3 text-white font-black text-lg tracking-tighter">
                 <div class="w-5 h-5 bg-white flex items-center justify-center rounded-sm">
@@ -29,8 +62,6 @@
                 <i data-lucide="menu" id="menu-icon"></i>
             </button>
         </div>
-
-        <!-- SIDEBAR -->
         <aside id="sidebar" class="w-64 bg-black border-r border-neutral-900 flex flex-col fixed h-full z-50 transform -translate-x-full lg:translate-x-0">
             <div class="p-8">
                 <div class="hidden lg:flex items-center gap-3 text-white font-black text-xl mb-12 tracking-tighter">
@@ -58,7 +89,15 @@
                 </nav>
             </div>
             
-            <div class="mt-auto p-8 border-t border-neutral-900">
+            <div class="p-8 border-t border-neutral-900">
+                <button id="darkModeToggle" onclick="toggleDarkMode()" class="w-full flex items-center gap-2 mb-4 px-4 py-3 rounded-full border border-neutral-800 bg-white/5 text-white hover:bg-white/10 transition-all text-[10px] font-bold uppercase tracking-widest">
+                    <i data-lucide="moon"></i>
+                    <span>Toggle Dark Mode</span>
+                </button>
+                <button id="btn-signout" class="w-full flex items-center justify-center gap-2 mb-8 px-4 py-3 rounded-full border border-red-900/30 bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all text-[10px] font-bold uppercase tracking-widest">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Sign Out</span>
+                </button>
                 <div class="text-[10px] font-bold text-neutral-700 uppercase tracking-widest mb-4">Project Team</div>
                 <div class="flex -space-x-2">
                     <div class="w-8 h-8 rounded-full bg-blue-600 border-2 border-black flex items-center justify-center text-[10px] font-bold">M1</div>
@@ -67,23 +106,24 @@
                 </div>
             </div>
         </aside>
-
-        <!-- OVERLAY FOR MOBILE SIDEBAR -->
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"></div>
-
-        <!-- MAIN CONTENT -->
         <main class="flex-1 lg:ml-64 p-4 md:p-12 lg:p-20 mt-16 lg:mt-0">
-            
-            <!-- PAGE 1: BUDGET INTEL (Member 1) -->
             <section id="page-budget" class="page-content block">
                 <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-16">
                     <div>
                         <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Financials</h1>
-                        
                     </div>
                     <div class="flex items-center gap-3 w-full md:w-auto">
                         <button onclick="toggleModal('configModal')" class="bg-neutral-900 text-white p-3 md:p-4 rounded-full border border-neutral-800 hover:border-neutral-600 transition-all flex-shrink-0">
                             <i data-lucide="settings" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="downloadSheet()" class="hidden md:inline-flex items-center gap-2 bg-white/5 text-white px-4 py-3 rounded-full border border-neutral-800 hover:bg-white/10 transition-all">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Download Sheet</span>
+                        </button>
+                        <button onclick="document.getElementById('importFile').click()" class="hidden md:inline-flex items-center gap-2 bg-white/5 text-white px-4 py-3 rounded-full border border-neutral-800 hover:bg-white/10 transition-all">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Import Sheet</span>
                         </button>
                         <button onclick="toggleModal('expenseModal')" class="flex-1 md:flex-none bg-white text-black px-4 md:px-10 py-3 md:py-4 rounded-full text-[9px] md:text-xs font-black uppercase tracking-widest hover:bg-neutral-200 transition-all whitespace-nowrap">
                             Add Transaction
@@ -123,12 +163,10 @@
                     </div>
                 </div>
             </section>
-
-            <!-- PAGE 2: RESOURCE UTILIZATION (Member 2) -->
             <section id="page-resources" class="page-content hidden">
                 <header class="mb-12 lg:mb-16">
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Resources</h1>
-                   
+                    
                 </header>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
@@ -162,12 +200,10 @@
                     </div>
                 </div>
             </section>
-
-            <!-- PAGE 3: PARTNER NETWORK (Member 3) -->
             <section id="page-network" class="page-content hidden">
                 <header class="mb-12 lg:mb-16">
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Network</h1>
-                 
+                    
                 </header>
 
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
@@ -175,15 +211,11 @@
                     <button onclick="fetchExternalPartners()" class="w-full sm:w-auto text-[10px] font-bold border border-neutral-800 px-4 py-2 hover:bg-white hover:text-black transition-all">REFRESH API</button>
                 </div>
 
-                <div id="partner-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Fetched data will be injected here -->
-                </div>
+                <div id="partner-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </section>
 
         </main>
     </div>
-
-    <!-- MODALS -->
     <div id="configModal" class="fixed inset-0 bg-black/98 backdrop-blur-md z-[100] hidden items-center justify-center p-4 md:p-6 overflow-y-auto">
         <div class="minimal-card w-full max-w-4xl p-6 md:p-16 rounded-sm my-8">
             <div class="flex justify-between mb-8 md:mb-12">
@@ -223,9 +255,9 @@
             </form>
         </div>
     </div>
-
-    <!-- Link to your external JS file -->
+    <input id="importFile" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="script.js"></script>
 </body>
-
 </html>
