@@ -130,7 +130,13 @@ const INITIAL_STATE = {
         { id: '101', category: 'Venue', desc: 'Main Hall Deposit', amount: 300000 },
         { id: '102', category: 'Tech', desc: 'LED Wall Hire', amount: 150000 }
     ],
-    sponsorship: 800000
+    sponsorship: 800000,
+    resources: {
+        avSystems: 92,
+        network: 65,
+        staffCurrent: 48,
+        staffTotal: 50
+    }
 };
 
 let state = JSON.parse(JSON.stringify(INITIAL_STATE));
@@ -202,6 +208,7 @@ function init() {
     lucide.createIcons();
     populateConfigForm();
     populateCategorySelects();
+    populateResourceForm();
     updateDashboard();
     // Hook import input
     const importEl = document.getElementById('importFile');
@@ -240,6 +247,18 @@ function populateCategorySelects() {
     const s = document.getElementById('expCategory');
     if (!s) return;
     s.innerHTML = Object.keys(state.allocated).map(cat => `<option value="${cat}">${cat}</option>`).join('');
+}
+
+function populateResourceForm() {
+    if (!state.resources) state.resources = { avSystems: 92, network: 65, staffCurrent: 48, staffTotal: 50 };
+    const rAv = document.getElementById('resAvSystems');
+    if (rAv) rAv.value = state.resources.avSystems;
+    const rNet = document.getElementById('resNetwork');
+    if (rNet) rNet.value = state.resources.network;
+    const rStaffCurr = document.getElementById('resStaffingCurrent');
+    if (rStaffCurr) rStaffCurr.value = state.resources.staffCurrent;
+    const rStaffTot = document.getElementById('resStaffingTotal');
+    if (rStaffTot) rStaffTot.value = state.resources.staffTotal;
 }
 
 function updateDashboard() {
@@ -282,6 +301,36 @@ function updateDashboard() {
         `).join('');
         document.getElementById('transaction-count').innerText = `${state.expenses.length} RECORDS`;
         lucide.createIcons();
+    }
+
+    // Render Resources
+    if (!state.resources) state.resources = { avSystems: 92, network: 65, staffCurrent: 48, staffTotal: 50 };
+    const hwContainer = document.getElementById('hardware-utilization-container');
+    if (hwContainer) {
+        hwContainer.innerHTML = `
+            <div>
+                <div class="flex justify-between text-[10px] md:text-xs font-bold mb-3 uppercase tracking-widest">
+                    <span>AV Systems</span>
+                    <span>${state.resources.avSystems}% Utilization</span>
+                </div>
+                <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-white h-full" style="width: ${state.resources.avSystems}%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-[10px] md:text-xs font-bold mb-3 uppercase tracking-widest">
+                    <span>Network Infrastructure</span>
+                    <span>${state.resources.network}% Utilization</span>
+                </div>
+                <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-neutral-600 h-full" style="width: ${state.resources.network}%"></div>
+                </div>
+            </div>
+        `;
+    }
+    const staffingCount = document.getElementById('staffing-count');
+    if (staffingCount) {
+        staffingCount.innerText = `${state.resources.staffCurrent}/${state.resources.staffTotal}`;
     }
 
     renderCharts(catTotals);
@@ -353,6 +402,20 @@ document.getElementById('expenseForm').addEventListener('submit', (e) => {
     updateDashboard();
 });
 
+const resForm = document.getElementById('resourceForm');
+if (resForm) {
+    resForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!state.resources) state.resources = {};
+        state.resources.avSystems = parseFloat(document.getElementById('resAvSystems').value) || 0;
+        state.resources.network = parseFloat(document.getElementById('resNetwork').value) || 0;
+        state.resources.staffCurrent = parseInt(document.getElementById('resStaffingCurrent').value, 10) || 0;
+        state.resources.staffTotal = parseInt(document.getElementById('resStaffingTotal').value, 10) || 0;
+        toggleModal('resourceModal');
+        updateDashboard();
+    });
+}
+
 function deleteExpense(id) { 
     state.expenses = state.expenses.filter(ex => ex.id !== id); 
     updateDashboard(); 
@@ -363,6 +426,43 @@ function resetAllData() {
         state = JSON.parse(JSON.stringify(INITIAL_STATE)); 
         updateDashboard(); 
     } 
+}
+
+// --- Team Members ---
+const teamMembers = {
+    'm1': { name: 'Arnav Gupta', reg: '24BCE1204', bg: 'bg-blue-600', initial: 'M1' },
+    'm2': { name: 'Kushagra', reg: '24BCE1204', bg: 'bg-emerald-600', initial: 'M2' },
+    'm3': { name: 'Sarthak', reg: '24BCE1204', bg: 'bg-purple-600', initial: 'M3' }
+};
+
+function showTeamMember(id) {
+    const member = teamMembers[id];
+    if (!member) return;
+    
+    document.getElementById('tmName').textContent = member.name;
+    document.getElementById('tmRegNo').textContent = `REG NO: ${member.reg}`;
+    
+    const avatar = document.getElementById('tmAvatar');
+    avatar.textContent = member.initial;
+    avatar.className = `w-16 h-16 mx-auto rounded-full flex items-center justify-center text-xl font-black mb-4 border-2 border-black ring-1 ring-neutral-800 ${member.bg}`;
+    
+    const m = document.getElementById('teamModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+    setTimeout(() => {
+        m.classList.remove('opacity-0');
+        document.getElementById('teamModalContent').classList.remove('scale-95');
+    }, 10);
+}
+
+function closeTeamModal() {
+    const m = document.getElementById('teamModal');
+    m.classList.add('opacity-0');
+    document.getElementById('teamModalContent').classList.add('scale-95');
+    setTimeout(() => {
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+    }, 300);
 }
 
 window.addEventListener('resize', () => {

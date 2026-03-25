@@ -100,9 +100,9 @@
                 </button>
                 <div class="text-[10px] font-bold text-neutral-700 uppercase tracking-widest mb-4">Project Team</div>
                 <div class="flex -space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-blue-600 border-2 border-black flex items-center justify-center text-[10px] font-bold">M1</div>
-                    <div class="w-8 h-8 rounded-full bg-emerald-600 border-2 border-black flex items-center justify-center text-[10px] font-bold">M2</div>
-                    <div class="w-8 h-8 rounded-full bg-purple-600 border-2 border-black flex items-center justify-center text-[10px] font-bold">M3</div>
+                    <div onclick="showTeamMember('m1')" class="w-8 h-8 rounded-full bg-blue-600 border-2 border-black flex items-center justify-center text-[10px] font-bold cursor-pointer hover:z-10 transition-transform hover:scale-110">M1</div>
+                    <div onclick="showTeamMember('m2')" class="w-8 h-8 rounded-full bg-emerald-600 border-2 border-black flex items-center justify-center text-[10px] font-bold cursor-pointer hover:z-10 transition-transform hover:scale-110">M2</div>
+                    <div onclick="showTeamMember('m3')" class="w-8 h-8 rounded-full bg-purple-600 border-2 border-black flex items-center justify-center text-[10px] font-bold cursor-pointer hover:z-10 transition-transform hover:scale-110">M3</div>
                 </div>
             </div>
         </aside>
@@ -164,38 +164,26 @@
                 </div>
             </section>
             <section id="page-resources" class="page-content hidden">
-                <header class="mb-12 lg:mb-16">
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Resources</h1>
-                    
+                <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 lg:mb-16">
+                    <div>
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tightest">Resources</h1>
+                    </div>
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <button onclick="toggleModal('resourceModal'); populateResourceForm();" class="bg-neutral-900 text-white p-3 md:p-4 rounded-full border border-neutral-800 hover:border-neutral-600 transition-all flex-shrink-0">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                        </button>
+                    </div>
                 </header>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
                     <div class="minimal-card p-6 md:p-10 rounded-sm lg:col-span-2">
                         <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-[0.3em] mb-8">Hardware Utilization</h3>
-                        <div class="space-y-8">
-                            <div>
-                                <div class="flex justify-between text-[10px] md:text-xs font-bold mb-3 uppercase tracking-widest">
-                                    <span>AV Systems</span>
-                                    <span>92% Utilization</span>
-                                </div>
-                                <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
-                                    <div class="bg-white h-full w-[92%]"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-[10px] md:text-xs font-bold mb-3 uppercase tracking-widest">
-                                    <span>Network Infrastructure</span>
-                                    <span>65% Utilization</span>
-                                </div>
-                                <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
-                                    <div class="bg-neutral-600 h-full w-[65%]"></div>
-                                </div>
-                            </div>
+                        <div class="space-y-8" id="hardware-utilization-container">
                         </div>
                     </div>
                     <div class="minimal-card p-6 md:p-10 rounded-sm">
                         <h3 class="text-[10px] font-black text-neutral-500 uppercase tracking-[0.3em] mb-8">Staffing</h3>
-                        <div class="text-3xl md:text-4xl font-black mb-2">48/50</div>
+                        <div class="text-3xl md:text-4xl font-black mb-2" id="staffing-count">0/0</div>
                         <p class="text-[10px] text-neutral-500 uppercase font-bold tracking-widest">Volunteers On-Site</p>
                     </div>
                 </div>
@@ -255,6 +243,53 @@
             </form>
         </div>
     </div>
+
+    <div id="resourceModal" class="fixed inset-0 bg-black/98 backdrop-blur-md z-[100] hidden items-center justify-center p-4 md:p-6 overflow-y-auto">
+        <div class="minimal-card w-full max-w-4xl p-6 md:p-16 rounded-sm my-8">
+            <div class="flex justify-between mb-8 md:mb-12">
+                <h3 class="text-2xl md:text-4xl font-black tracking-tighter">Resource Setup</h3>
+                <button onclick="toggleModal('resourceModal')" class="text-neutral-500 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <form id="resourceForm" class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-neutral-600 uppercase">AV Systems (%)</label>
+                        <input type="number" id="resAvSystems" class="w-full px-4 py-4 text-lg md:text-xl font-bold bg-neutral-900 text-white border border-neutral-800 rounded-sm focus:outline-none focus:border-neutral-600" min="0" max="100">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-neutral-600 uppercase">Network (%)</label>
+                        <input type="number" id="resNetwork" class="w-full px-4 py-4 text-lg md:text-xl font-bold bg-neutral-900 text-white border border-neutral-800 rounded-sm focus:outline-none focus:border-neutral-600" min="0" max="100">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-neutral-600 uppercase">Staffing (Current)</label>
+                        <input type="number" id="resStaffingCurrent" class="w-full px-4 py-4 text-lg md:text-xl font-bold bg-neutral-900 text-white border border-neutral-800 rounded-sm focus:outline-none focus:border-neutral-600" min="0">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-neutral-600 uppercase">Staffing (Total)</label>
+                        <input type="number" id="resStaffingTotal" class="w-full px-4 py-4 text-lg md:text-xl font-bold bg-neutral-900 text-white border border-neutral-800 rounded-sm focus:outline-none focus:border-neutral-600" min="0">
+                    </div>
+                </div>
+                <div class="lg:col-span-2 flex justify-end pt-8 md:pt-10 border-t border-neutral-900">
+                    <button type="submit" class="w-full md:w-auto bg-white text-black px-12 py-4 md:py-5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-neutral-200 transition-all">Apply Resources</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="teamModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] hidden items-center justify-center p-4 md:p-6 opacity-0 transition-opacity duration-300">
+        <div class="minimal-card w-full max-w-xs p-8 rounded-sm text-center relative transform scale-95 transition-transform duration-300 shadow-2xl bg-[#050505] border border-neutral-900" id="teamModalContent">
+            <button onclick="closeTeamModal()" class="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <div id="tmAvatar" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-xl font-black mb-4 border-2 border-black ring-1 ring-neutral-800"></div>
+            <h3 id="tmName" class="text-xl font-black tracking-tight text-white mb-1"></h3>
+            <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-4">Project Member</p>
+            <div class="bg-neutral-900 px-4 py-3 rounded-sm border border-neutral-800">
+                <p id="tmRegNo" class="text-[10px] font-mono text-white tracking-widest uppercase"></p>
+            </div>
+        </div>
+    </div>
+
     <input id="importFile" type="file" accept=".xlsx,.xls,.csv" class="hidden">
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
