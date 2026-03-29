@@ -94,34 +94,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- Dark Mode Toggle ---
-function toggleDarkMode() {
+// --- Theme Cycle ---
+const themes = ['oled', 'coffee', 'light', 'notebook', 'vibrant'];
+let currentThemeIdx = 0;
+
+function cycleTheme() {
     const body = document.body;
-    const btn = document.getElementById('darkModeToggle');
-    const isDark = body.classList.contains('dark-mode');
-    if (isDark) {
-        body.classList.remove('dark-mode');
-        localStorage.setItem('eventpro_theme', 'light');
-        if (btn) btn.querySelector('i').setAttribute('data-lucide', 'moon');
-    } else {
-        body.classList.add('dark-mode');
-        localStorage.setItem('eventpro_theme', 'dark');
-        if (btn) btn.querySelector('i').setAttribute('data-lucide', 'sun');
+    currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+    const theme = themes[currentThemeIdx];
+    
+    body.classList.remove('theme-oled', 'theme-coffee', 'theme-light');
+    if (theme !== 'oled') {
+        body.classList.add(`theme-${theme}`);
     }
-    lucide.createIcons();
+    
+    localStorage.setItem('eventpro_theme', theme);
+    
+    const btn = document.getElementById('themeToggle');
+    if (btn) {
+        const span = btn.querySelector('span');
+        if (span) span.innerText = `Theme: ${theme.toUpperCase()}`;
+    }
 }
 
 // On load, apply theme from localStorage
-if (localStorage.getItem('eventpro_theme') === 'dark') {
-    document.body.classList.add('dark-mode');
-    setTimeout(() => {
-        const btn = document.getElementById('darkModeToggle');
-        if (btn && btn.querySelector('i')) {
-            btn.querySelector('i').setAttribute('data-lucide', 'sun');
-            lucide.createIcons();
-        }
-    }, 100);
+const savedTheme = localStorage.getItem('eventpro_theme') || 'oled';
+if (savedTheme && savedTheme !== 'oled') {
+    document.body.classList.add(`theme-${savedTheme}`);
+    currentThemeIdx = themes.indexOf(savedTheme);
 }
+setTimeout(() => {
+    const btn = document.getElementById('themeToggle');
+    if (btn) {
+        const span = btn.querySelector('span');
+        if (span) span.innerText = `Theme: ${savedTheme.toUpperCase()}`;
+    }
+}, 100);
 // --- State Management ---
 const INITIAL_STATE = {
     totalBudgetLimit: 2000000,
@@ -136,8 +144,95 @@ const INITIAL_STATE = {
         network: 65,
         staffCurrent: 48,
         staffTotal: 50
+    },
+    inventory: [
+        { id: '1011', name: 'Main PA System', assignee: 'Sound Team', status: 'Active' },
+        { id: '1012', name: 'Stage Monitors', assignee: 'Stage Crew', status: 'Idle' }
+    ]
+};
+
+const EVENT_TEMPLATES = {
+    'wedding': {
+        totalBudgetLimit: 3000000,
+        sponsorship: 500000,
+        allocated: { 'Venue': 1000000, 'Catering': 800000, 'Decor': 500000, 'Photography': 300000, 'Entertainment': 400000 },
+        expenses: [
+            { id: '401', category: 'Venue', desc: 'Resort Booking', amount: 500000 },
+            { id: '402', category: 'Catering', desc: 'Tasting Advance', amount: 50000 },
+            { id: '403', category: 'Photography', desc: 'Pre-wedding Shoot', amount: 150000 }
+        ],
+        resources: { avSystems: 20, network: 10, staffCurrent: 15, staffTotal: 25 },
+        inventory: [
+            { id: 'W01', name: 'Floral Arches', assignee: 'Decor Team', status: 'Active' },
+            { id: 'W02', name: 'DJ Console', assignee: 'Entertainment', status: 'Idle' }
+        ]
+    },
+    'concert': {
+        totalBudgetLimit: 15000000,
+        sponsorship: 8000000,
+        allocated: { 'Talent': 6000000, 'Production': 4000000, 'Marketing': 2000000, 'Venue': 1500000, 'Security': 1500000 },
+        expenses: [
+            { id: '501', category: 'Talent', desc: 'Headliner Advance', amount: 2000000 },
+            { id: '502', category: 'Venue', desc: 'Stadium Booking', amount: 750000 },
+            { id: '503', category: 'Production', desc: 'Line Array Booking', amount: 500000 }
+        ],
+        resources: { avSystems: 95, network: 40, staffCurrent: 120, staffTotal: 150 },
+        inventory: [
+            { id: 'C01', name: 'Line Array PA', assignee: 'Audio Team', status: 'Active' },
+            { id: 'C02', name: 'Moving Heads', assignee: 'Lighting Dept', status: 'Active' }
+        ]
+    },
+    'tech': {
+        totalBudgetLimit: 5000000,
+        sponsorship: 2000000,
+        allocated: { 'Venue': 1500000, 'Tech/WiFi': 1000000, 'Catering': 1000000, 'Marketing': 800000, 'Speakers': 700000 },
+        expenses: [
+            { id: '601', category: 'Venue', desc: 'Convention Center', amount: 750000 },
+            { id: '602', category: 'Tech/WiFi', desc: 'High Density APs', amount: 400000 },
+            { id: '603', category: 'Marketing', desc: 'Social Ads', amount: 200000 }
+        ],
+        resources: { avSystems: 40, network: 98, staffCurrent: 45, staffTotal: 50 },
+        inventory: [
+            { id: 'T01', name: 'Enterprise Routers', assignee: 'IT Team', status: 'Active' },
+            { id: 'T02', name: 'Clickers', assignee: 'Stage Mgmt', status: 'Idle' }
+        ]
+    },
+    'gala': {
+        totalBudgetLimit: 2000000,
+        sponsorship: 2000000,
+        allocated: { 'Venue': 800000, 'Catering': 600000, 'Entertainment': 300000, 'Awards': 150000, 'Transport': 150000 },
+        expenses: [
+            { id: '701', category: 'Venue', desc: 'Banquet Hall', amount: 400000 },
+            { id: '702', category: 'Awards', desc: 'Glass Trophies', amount: 75000 }
+        ],
+        resources: { avSystems: 30, network: 15, staffCurrent: 20, staffTotal: 30 },
+        inventory: [
+            { id: 'G01', name: 'LED Screens', assignee: 'Visuals', status: 'Active' },
+            { id: 'G02', name: 'Podium', assignee: 'Stage Crew', status: 'Maintenance' }
+        ]
     }
 };
+
+function applyTemplate(id) {
+    if(confirm('Applying a new template will completely overwrite your current dashboard state. Are you sure you want to proceed?')) {
+        state = JSON.parse(JSON.stringify(EVENT_TEMPLATES[id]));
+        populateConfigForm();
+        populateCategorySelects();
+        populateResourceForm();
+        updateDashboard();
+        toggleModal('templateModal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if(isSidebarOpen) toggleSidebar();
+    }
+}
+
+const EVENT_DAYS = 30;
+const DAYS_ELAPSED = 15;
+
+function calculateForecast(totalUtilized) {
+    if (DAYS_ELAPSED === 0) return 0;
+    return (totalUtilized / DAYS_ELAPSED) * EVENT_DAYS;
+}
 
 let state = JSON.parse(JSON.stringify(INITIAL_STATE));
 let charts = {};
@@ -178,6 +273,8 @@ function navigate(pageId) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+let partnersData = [];
+
 // --- External Data Fetching (Member 3 Task) ---
 async function fetchExternalPartners() {
     const grid = document.getElementById('partner-grid');
@@ -186,11 +283,12 @@ async function fetchExternalPartners() {
     try {
         const response = await fetch('https://jsonplaceholder.typicode.com/users');
         const data = await response.json();
+        partnersData = data;
         
         grid.innerHTML = data.slice(0, 6).map(partner => `
-            <div class="minimal-card p-6 md:p-10 rounded-sm">
+            <div onclick="showPartner(${partner.id})" class="minimal-card p-6 md:p-10 rounded-sm cursor-pointer hover:border-white transition-all group">
                 <p class="text-[10px] font-black text-neutral-600 uppercase tracking-widest mb-4">Partner #${partner.id}</p>
-                <h4 class="text-lg md:text-xl font-black mb-1 text-white">${partner.name}</h4>
+                <h4 class="text-lg md:text-xl font-black mb-1 text-white group-hover:text-blue-500 transition-colors">${partner.name}</h4>
                 <p class="text-xs text-neutral-500 mb-6 font-medium">${partner.company.name}</p>
                 <div class="flex items-center gap-2 text-[10px] font-bold text-blue-500">
                     <i data-lucide="verified" class="w-3 h-3"></i> VERIFIED VENDOR
@@ -201,6 +299,20 @@ async function fetchExternalPartners() {
     } catch (error) {
         grid.innerHTML = `<p class="text-red-500 font-bold p-10">Error fetching external partner data.</p>`;
     }
+}
+
+function showPartner(id) {
+    const p = partnersData.find(x => x.id === id);
+    if(!p) return;
+    document.getElementById('partnerName').innerText = p.name;
+    document.getElementById('partnerCompany').innerText = p.company.name;
+    document.getElementById('partnerEmail').innerText = p.email;
+    document.getElementById('partnerEmailBtn').href = `mailto:${p.email}`;
+    document.getElementById('partnerPhone').innerText = p.phone;
+    document.getElementById('partnerPhoneBtn').href = `tel:${p.phone}`;
+    document.getElementById('partnerWebsite').innerText = p.website;
+    document.getElementById('partnerWebsiteBtn').href = `http://${p.website}`;
+    toggleModal('partnerModal');
 }
 
 // --- Initialization & UI Rendering ---
@@ -271,16 +383,26 @@ function updateDashboard() {
     // KPI Cards rendering - Use fluid text sizes to fit on mobile
     const kpiContainer = document.getElementById('kpi-container');
     if(kpiContainer) {
+        const forecast = calculateForecast(totalUtilized);
+        const variance = state.totalBudgetLimit > 0 ? ((state.totalBudgetLimit - forecast) / state.totalBudgetLimit) * 100 : 0;
+        const dailyBurnRate = DAYS_ELAPSED > 0 ? (totalUtilized / DAYS_ELAPSED) : 0;
+        const fundingCoverage = totalUtilized > 0 ? (state.sponsorship / totalUtilized) : (state.sponsorship > 0 ? 999 : 0);
+        const cashRunway = dailyBurnRate > 0 ? (state.sponsorship / dailyBurnRate) : 0;
+        
         const kpis = [
-            { l: 'Budget Limit', v: state.totalBudgetLimit },
-            { l: 'Capital Utilized', v: totalUtilized },
-            { l: 'Sponsorship', v: state.sponsorship },
-            { l: 'Net Available', v: balance, u: balance < 0 }
+            { l: 'Budget Limit', v: '₹' + state.totalBudgetLimit.toLocaleString('en-IN') },
+            { l: 'Capital Utilized', v: '₹' + totalUtilized.toLocaleString('en-IN') },
+            { l: 'Projected Final Cost', v: '₹' + Math.round(forecast).toLocaleString('en-IN'), u: forecast > state.totalBudgetLimit },
+            { l: 'Budget Variance', v: Math.abs(variance).toFixed(1) + '%', u: variance < 0 },
+            { l: 'Sponsorship', v: '₹' + state.sponsorship.toLocaleString('en-IN') },
+            { l: 'Net Available', v: '₹' + Math.abs(balance).toLocaleString('en-IN'), u: balance < 0 },
+            { l: 'Funding Coverage', v: fundingCoverage > 900 ? '∞' : fundingCoverage.toFixed(2) + 'x', u: fundingCoverage < 1 },
+            { l: 'Cash Runway', v: cashRunway > 0 ? Math.round(cashRunway) + ' Days' : 'N/A', u: cashRunway < 30 }
         ];
         kpiContainer.innerHTML = kpis.map(k => `
-            <div class="minimal-card p-5 md:p-12 rounded-sm">
-                <p class="text-neutral-500 text-[10px] font-black uppercase tracking-widest mb-3 md:mb-6">${k.l}</p>
-                <h3 class="text-xl md:text-3xl font-black ${k.u ? 'text-red-500' : 'text-white'}">₹${Math.abs(k.v).toLocaleString('en-IN')}</h3>
+            <div class="minimal-card p-4 md:p-6 rounded-sm">
+                <p class="text-neutral-500 text-[10px] md:text-xs font-black uppercase tracking-widest mb-2">${k.l}</p>
+                <h3 class="text-xl md:text-2xl font-black ${k.u ? 'text-red-500' : 'text-white'}">${k.v}</h3>
             </div>
         `).join('');
     }
@@ -290,11 +412,11 @@ function updateDashboard() {
     if(body) {
         body.innerHTML = state.expenses.slice().reverse().map(ex => `
             <tr class="border-b border-neutral-900 group hover:bg-neutral-900/50 transition-all">
-                <td class="px-6 md:px-10 py-5 md:py-7 font-mono text-[10px] text-neutral-600">REF-${ex.id}</td>
-                <td class="px-6 md:px-10 py-5 md:py-7 text-[10px] font-black text-white uppercase tracking-widest">${ex.category}</td>
-                <td class="px-6 md:px-10 py-5 md:py-7 text-neutral-500 font-medium">${ex.desc}</td>
-                <td class="px-6 md:px-10 py-5 md:py-7 text-right font-black text-white">₹${ex.amount.toLocaleString('en-IN')}</td>
-                <td class="px-6 md:px-10 py-5 md:py-7 text-center">
+                <td class="px-4 md:px-6 py-3 md:py-4 font-mono text-xs md:text-sm font-black text-neutral-400">REF-${ex.id}</td>
+                <td class="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-black text-white uppercase tracking-wider">${ex.category}</td>
+                <td class="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm text-neutral-300 font-medium">${ex.desc}</td>
+                <td class="px-4 md:px-6 py-3 md:py-4 text-sm md:text-base text-right font-black text-white">₹${ex.amount.toLocaleString('en-IN')}</td>
+                <td class="px-4 md:px-6 py-3 md:py-4 text-center">
                     <button onclick="deleteExpense('${ex.id}')" class="text-neutral-800 hover:text-white transition-colors p-2"><i data-lucide="x" class="w-3 h-3 mx-auto"></i></button>
                 </td>
             </tr>
@@ -328,9 +450,20 @@ function updateDashboard() {
             </div>
         `;
     }
-    const staffingCount = document.getElementById('staffing-count');
-    if (staffingCount) {
-        staffingCount.innerText = `${state.resources.staffCurrent}/${state.resources.staffTotal}`;
+    // Render Resources Inventory
+    if (!state.inventory) state.inventory = [];
+    const invBody = document.getElementById('inventory-body');
+    if (invBody) {
+        invBody.innerHTML = state.inventory.slice().reverse().map(inv => `
+            <tr class="border-b border-neutral-900 group hover:bg-neutral-900/50 transition-all">
+                <td class="px-4 md:px-6 py-3 md:py-4 font-mono text-xs md:text-sm text-neutral-400">AST-${inv.id}</td>
+                <td class="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-black text-white uppercase tracking-wider">${inv.name}</td>
+                <td class="px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm text-neutral-300 font-medium">${inv.assignee}</td>
+                <td class="px-4 md:px-6 py-3 md:py-4 text-center font-black text-xs md:text-sm ${inv.status === 'Active' ? 'text-emerald-500' : inv.status === 'Maintenance' ? 'text-red-500' : 'text-neutral-500'}">${inv.status}</td>
+            </tr>
+        `).join('');
+        const invCount = document.getElementById('inventory-count');
+        if (invCount) invCount.innerText = `${state.inventory.length} RECORDS`;
     }
 
     renderCharts(catTotals);
@@ -343,6 +476,13 @@ function updateDashboard() {
 }
 
 function renderCharts(catTotals) {
+    if (typeof Chart === 'undefined') return;
+    
+    Chart.defaults.color = '#737373';
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.font.weight = 'bold';
+
     const labels = Object.keys(state.allocated);
     const ctxA = document.getElementById('allocationChart');
     const ctxC = document.getElementById('categoryChart');
@@ -377,6 +517,81 @@ function renderCharts(catTotals) {
         },
         options: { responsive: true, maintainAspectRatio: false, cutout: '90%', plugins: { legend: { display: false } } }
     });
+
+    // Burn Rate Chart (Line)
+    const ctxB = document.getElementById('burnRateChart');
+    if (ctxB) {
+        if (charts.B) charts.B.destroy();
+        let labels = [], historical = [], projection = [];
+        const avg = Object.values(catTotals).reduce((a,b)=>a+b,0) / (DAYS_ELAPSED || 1);
+        
+        for (let i = 1; i <= DAYS_ELAPSED; i += Math.ceil(DAYS_ELAPSED/5)) {
+            labels.push('Day ' + i);
+            historical.push(avg * i);
+            projection.push(null);
+        }
+        if (historical.length) projection[projection.length - 1] = historical[historical.length - 1];
+        else { labels.push('Day 0'); historical.push(0); projection.push(0); }
+        
+        for (let i = DAYS_ELAPSED + Math.ceil((EVENT_DAYS - DAYS_ELAPSED)/4); i <= EVENT_DAYS; i += Math.ceil((EVENT_DAYS - DAYS_ELAPSED)/4)) {
+            labels.push('Day ' + i);
+            historical.push(null);
+            projection.push(avg * i);
+        }
+
+        charts.B = new Chart(ctxB, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Actual Spend', data: historical, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, borderWidth: 3 },
+                    { label: 'Projected', data: projection, borderColor: '#737373', borderDash: [5, 5], tension: 0.4, borderWidth: 2 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }, plugins: { legend: { labels: { color: '#a3a3a3', font: { size: 12, weight: 'bold' } } } } }
+        });
+    }
+
+    // Variance Chart (Bar)
+    const ctxV = document.getElementById('varianceChart');
+    if (ctxV) {
+        if (charts.V) charts.V.destroy();
+        const varLabels = Object.keys(catTotals);
+        const varData = varLabels.map(cat => state.allocated[cat] - catTotals[cat]);
+        const bgColors = varData.map(v => v >= 0 ? '#10b981' : '#f43f5e');
+        
+        charts.V = new Chart(ctxV, {
+            type: 'bar',
+            data: {
+                labels: varLabels,
+                datasets: [{ label: 'Budget Variance', data: varData, backgroundColor: bgColors, borderRadius: 4 }]
+            },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+        });
+    }
+
+    // Deployment Chart
+    const ctxD = document.getElementById('deploymentChart');
+    if (ctxD) {
+        if (charts.D) charts.D.destroy();
+        const depStatusCounts = { 'Active': 0, 'Maintenance': 0, 'Idle': 0 };
+        if (state.inventory) {
+            state.inventory.forEach(i => depStatusCounts[i.status] = (depStatusCounts[i.status] || 0) + 1);
+        }
+        if (Object.values(depStatusCounts).reduce((a,b)=>a+b,0) === 0) depStatusCounts['Active'] = 1; // placeholder
+        charts.D = new Chart(ctxD, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(depStatusCounts),
+                datasets: [{
+                    data: Object.values(depStatusCounts),
+                    backgroundColor: ['#10b981', '#f43f5e', '#525252'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#737373', boxWidth: 10, font: {size: 10, weight: 'bold'} } } } }
+        });
+    }
 }
 
 // --- Event Listeners ---
@@ -397,10 +612,39 @@ document.getElementById('expenseForm').addEventListener('submit', (e) => {
         desc: document.getElementById('expDesc').value,
         amount: parseFloat(document.getElementById('expAmount').value)
     });
+    
+    // Trigger coin animation
+    const coin = document.createElement('div');
+    coin.textContent = '₹';
+    coin.className = 'coin-anim';
+    // Get button coordinates (approximate center of form)
+    const rect = e.target.querySelector('button[type="submit"]').getBoundingClientRect();
+    coin.style.left = `${rect.left + rect.width / 2}px`;
+    coin.style.top = `${rect.top}px`;
+    document.body.appendChild(coin);
+    setTimeout(() => coin.remove(), 1000);
+
     e.target.reset();
     toggleModal('expenseModal');
     updateDashboard();
 });
+
+const assetForm = document.getElementById('assetForm');
+if (assetForm) {
+    assetForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!state.inventory) state.inventory = [];
+        state.inventory.push({
+            id: Math.floor(1000+Math.random()*8999).toString(),
+            name: document.getElementById('assetName').value,
+            assignee: document.getElementById('assetAssignee').value,
+            status: document.getElementById('assetStatus').value
+        });
+        e.target.reset();
+        toggleModal('assetModal');
+        updateDashboard();
+    });
+}
 
 const resForm = document.getElementById('resourceForm');
 if (resForm) {
@@ -496,11 +740,22 @@ async function downloadSheet() {
         // KPIs
         ws.getCell('A1').value = 'Metric';
         ws.getCell('B1').value = 'Value (₹)';
+        
+        const forecast = calculateForecast(totalUtilized);
+        const variance = state.totalBudgetLimit > 0 ? ((state.totalBudgetLimit - forecast) / state.totalBudgetLimit) * 100 : 0;
+        const dailyBurnRate = DAYS_ELAPSED > 0 ? (totalUtilized / DAYS_ELAPSED) : 0;
+        const fundingCoverage = totalUtilized > 0 ? (state.sponsorship / totalUtilized) : (state.sponsorship > 0 ? 999 : 0);
+        const cashRunway = dailyBurnRate > 0 ? (state.sponsorship / dailyBurnRate) : 0;
+
         const kpis = [
             ['Budget Limit', state.totalBudgetLimit],
             ['Capital Utilized', totalUtilized],
+            ['Projected Final Cost', Math.round(forecast)],
+            ['Budget Variance (%)', Number(variance.toFixed(1))],
             ['Sponsorship', state.sponsorship],
-            ['Net Available', balance]
+            ['Net Available', balance],
+            ['Funding Coverage', Number(fundingCoverage.toFixed(2))],
+            ['Cash Runway (Days)', Math.round(cashRunway)]
         ];
         let r = 2;
         kpis.forEach(k => {
@@ -530,20 +785,28 @@ async function downloadSheet() {
         // Embed charts as images (capture canvases)
         const allocationCanvas = document.getElementById('allocationChart');
         const categoryCanvas = document.getElementById('categoryChart');
+        const burnCanvas = document.getElementById('burnRateChart');
+        const varianceCanvas = document.getElementById('varianceChart');
 
         if (allocationCanvas && categoryCanvas) {
-            // Convert canvases to base64 PNGs
             const dataA = allocationCanvas.toDataURL('image/png');
             const dataC = categoryCanvas.toDataURL('image/png');
-
-            // ExcelJS expects base64 without the data: prefix
             const imgIdA = workbook.addImage({ base64: dataA.split(',')[1], extension: 'png' });
             const imgIdC = workbook.addImage({ base64: dataC.split(',')[1], extension: 'png' });
 
-            // Place images on the Budget Overview sheet
-            // Positioning: columns/rows are 0-indexed for tl in exceljs when using col/row
-            ws.addImage(imgIdA, { tl: { col: 3, row: 0 }, ext: { width: 520, height: 300 } });
-            ws.addImage(imgIdC, { tl: { col: 3, row: 16 }, ext: { width: 340, height: 300 } });
+            ws.addImage(imgIdA, { tl: { col: 3, row: 0 }, ext: { width: 520, height: 260 } });
+            ws.addImage(imgIdC, { tl: { col: 3, row: 15 }, ext: { width: 360, height: 260 } });
+            
+            if (burnCanvas) {
+                const dataB = burnCanvas.toDataURL('image/png');
+                const imgIdB = workbook.addImage({ base64: dataB.split(',')[1], extension: 'png' });
+                ws.addImage(imgIdB, { tl: { col: 12, row: 0 }, ext: { width: 520, height: 260 } });
+            }
+            if (varianceCanvas) {
+                const dataV = varianceCanvas.toDataURL('image/png');
+                const imgIdV = workbook.addImage({ base64: dataV.split(',')[1], extension: 'png' });
+                ws.addImage(imgIdV, { tl: { col: 12, row: 15 }, ext: { width: 520, height: 260 } });
+            }
         }
 
         // Auto-width for a few columns
