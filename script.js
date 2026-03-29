@@ -452,6 +452,7 @@ function updateDashboard() {
     if (!state.resources) state.resources = { avSystems: 92, network: 65, staffCurrent: 48, staffTotal: 50 };
     const hwContainer = document.getElementById('hardware-utilization-container');
     if (hwContainer) {
+        const staffPercent = state.resources.staffTotal > 0 ? (state.resources.staffCurrent / state.resources.staffTotal) * 100 : 0;
         hwContainer.innerHTML = `
             <div>
                 <div class="flex justify-between text-[10px] md:text-xs font-bold mb-3 uppercase tracking-widest">
@@ -469,6 +470,15 @@ function updateDashboard() {
                 </div>
                 <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
                     <div class="bg-neutral-600 h-full" style="width: ${state.resources.network}%"></div>
+                </div>
+            </div>
+            <div class="pt-2">
+                <div class="flex justify-between text-[10px] md:text-xs font-bold mb-3 uppercase tracking-widest">
+                    <span>Staff Deployment</span>
+                    <span>${state.resources.staffCurrent} / ${state.resources.staffTotal} Active</span>
+                </div>
+                <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-blue-500 h-full" style="width: ${Math.min(staffPercent, 100)}%"></div>
                 </div>
             </div>
         `;
@@ -616,6 +626,69 @@ function renderCharts(catTotals) {
             options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#737373', boxWidth: 10, font: {size: 10, weight: 'bold'} } } } }
         });
     }
+}
+
+let expandedChartInstance = null;
+
+function openExpandedChart(chartKey, title) {
+    if (!charts[chartKey]) return;
+    
+    document.getElementById('expandedChartTitle').innerText = title;
+    
+    const m = document.getElementById('chartExpandedModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+
+    const ctx = document.getElementById('expandedChartCanvas').getContext('2d');
+    if (expandedChartInstance) {
+        expandedChartInstance.destroy();
+    }
+    
+    const originalConfig = charts[chartKey].config;
+    
+    const newConfig = {
+        type: originalConfig.type,
+        data: JSON.parse(JSON.stringify(originalConfig.data)),
+        options: JSON.parse(JSON.stringify(originalConfig.options))
+    };
+
+    newConfig.options.responsive = true;
+    newConfig.options.maintainAspectRatio = false;
+    
+    if (!newConfig.options.plugins) newConfig.options.plugins = {};
+    if (!newConfig.options.plugins.legend) newConfig.options.plugins.legend = {};
+    
+    newConfig.options.plugins.legend.display = true;
+    newConfig.options.plugins.legend.labels = { color: '#a3a3a3', font: { size: 14, weight: 'bold' }, padding: 20 };
+    
+    if (chartKey === 'A') {
+        if (newConfig.options.scales && newConfig.options.scales.y) newConfig.options.scales.y.display = true;
+    } else if (chartKey === 'C' || chartKey === 'D') {
+        newConfig.options.plugins.legend.position = 'right';
+        newConfig.options.cutout = '60%'; // nicer in large view
+    } else if (chartKey === 'V') {
+        if (newConfig.options.scales && newConfig.options.scales.y) newConfig.options.scales.y.display = true;
+    }
+
+    // Force animation on newly opened modal for better effect
+    newConfig.options.animation = {
+        duration: 800,
+        easing: 'easeOutQuart'
+    };
+
+    expandedChartInstance = new Chart(ctx, newConfig);
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+}
+
+function closeExpandedChart() {
+    const m = document.getElementById('chartExpandedModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+    document.body.style.overflow = '';
 }
 
 // --- Event Listeners ---
