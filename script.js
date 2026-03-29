@@ -103,7 +103,7 @@ function cycleTheme() {
     currentThemeIdx = (currentThemeIdx + 1) % themes.length;
     const theme = themes[currentThemeIdx];
     
-    body.classList.remove('theme-oled', 'theme-coffee', 'theme-light');
+    body.classList.remove('theme-oled', 'theme-coffee', 'theme-light', 'theme-notebook', 'theme-vibrant');
     if (theme !== 'oled') {
         body.classList.add(`theme-${theme}`);
     }
@@ -226,12 +226,30 @@ function applyTemplate(id) {
     }
 }
 
-const EVENT_DAYS = 30;
-const DAYS_ELAPSED = 15;
+function getDynamicDays() {
+    if (!state.startDate || !state.endDate) {
+        state.startDate = new Date().toISOString().split('T')[0];
+        let d = new Date(); d.setDate(d.getDate() + 30);
+        state.endDate = d.toISOString().split('T')[0];
+    }
+    const start = new Date(state.startDate);
+    const end = new Date(state.endDate);
+    const now = new Date();
+    
+    let eventDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    if (eventDays <= 0) eventDays = 1;
+    
+    let daysElapsed = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+    if (daysElapsed < 0) daysElapsed = 0;
+    if (daysElapsed > eventDays) daysElapsed = eventDays;
+    
+    let calcDaysElapsed = daysElapsed === 0 ? 1 : daysElapsed;
+    return { eventDays, daysElapsed, calcDaysElapsed };
+}
 
 function calculateForecast(totalUtilized) {
-    if (DAYS_ELAPSED === 0) return 0;
-    return (totalUtilized / DAYS_ELAPSED) * EVENT_DAYS;
+    const { eventDays, calcDaysElapsed } = getDynamicDays();
+    return (totalUtilized / calcDaysElapsed) * eventDays;
 }
 
 let state = JSON.parse(JSON.stringify(INITIAL_STATE));
@@ -353,6 +371,10 @@ function populateConfigForm() {
     `).join('');
     document.getElementById('configTotalBudget').value = state.totalBudgetLimit;
     document.getElementById('configSponsorship').value = state.sponsorship;
+    
+    if (!state.startDate || !state.endDate) { getDynamicDays(); }
+    document.getElementById('configStartDate').value = state.startDate;
+    document.getElementById('configEndDate').value = state.endDate;
 }
 
 function populateCategorySelects() {
@@ -383,9 +405,10 @@ function updateDashboard() {
     // KPI Cards rendering - Use fluid text sizes to fit on mobile
     const kpiContainer = document.getElementById('kpi-container');
     if(kpiContainer) {
+        const { eventDays, calcDaysElapsed, daysElapsed } = getDynamicDays();
         const forecast = calculateForecast(totalUtilized);
         const variance = state.totalBudgetLimit > 0 ? ((state.totalBudgetLimit - forecast) / state.totalBudgetLimit) * 100 : 0;
-        const dailyBurnRate = DAYS_ELAPSED > 0 ? (totalUtilized / DAYS_ELAPSED) : 0;
+        const dailyBurnRate = calcDaysElapsed > 0 ? (totalUtilized / calcDaysElapsed) : 0;
         const fundingCoverage = totalUtilized > 0 ? (state.sponsorship / totalUtilized) : (state.sponsorship > 0 ? 999 : 0);
         const cashRunway = dailyBurnRate > 0 ? (state.sponsorship / dailyBurnRate) : 0;
         
@@ -522,10 +545,11 @@ function renderCharts(catTotals) {
     const ctxB = document.getElementById('burnRateChart');
     if (ctxB) {
         if (charts.B) charts.B.destroy();
+        const { eventDays, daysElapsed, calcDaysElapsed } = getDynamicDays();
         let labels = [], historical = [], projection = [];
-        const avg = Object.values(catTotals).reduce((a,b)=>a+b,0) / (DAYS_ELAPSED || 1);
+        const avg = Object.values(catTotals).reduce((a,b)=>a+b,0) / calcDaysElapsed;
         
-        for (let i = 1; i <= DAYS_ELAPSED; i += Math.ceil(DAYS_ELAPSED/5)) {
+        for (let i = 1; i <= daysElapsed; i += Math.ceil(daysElapsed/5)) {
             labels.push('Day ' + i);
             historical.push(avg * i);
             projection.push(null);
@@ -533,7 +557,7 @@ function renderCharts(catTotals) {
         if (historical.length) projection[projection.length - 1] = historical[historical.length - 1];
         else { labels.push('Day 0'); historical.push(0); projection.push(0); }
         
-        for (let i = DAYS_ELAPSED + Math.ceil((EVENT_DAYS - DAYS_ELAPSED)/4); i <= EVENT_DAYS; i += Math.ceil((EVENT_DAYS - DAYS_ELAPSED)/4)) {
+        for (let i = daysElapsed + Math.ceil((eventDays - daysElapsed)/4); i <= eventDays; i += Math.ceil((eventDays - daysElapsed)/4)) {
             labels.push('Day ' + i);
             historical.push(null);
             projection.push(avg * i);
@@ -600,6 +624,8 @@ document.getElementById('configForm').addEventListener('submit', (e) => {
     document.querySelectorAll('.alloc-input').forEach(i => state.allocated[i.dataset.cat] = parseFloat(i.value) || 0);
     state.totalBudgetLimit = parseFloat(document.getElementById('configTotalBudget').value) || 0;
     state.sponsorship = parseFloat(document.getElementById('configSponsorship').value) || 0;
+    state.startDate = document.getElementById('configStartDate').value || state.startDate;
+    state.endDate = document.getElementById('configEndDate').value || state.endDate;
     toggleModal('configModal');
     updateDashboard();
 });
@@ -741,9 +767,10 @@ async function downloadSheet() {
         ws.getCell('A1').value = 'Metric';
         ws.getCell('B1').value = 'Value (₹)';
         
+        const { calcDaysElapsed } = getDynamicDays();
         const forecast = calculateForecast(totalUtilized);
         const variance = state.totalBudgetLimit > 0 ? ((state.totalBudgetLimit - forecast) / state.totalBudgetLimit) * 100 : 0;
-        const dailyBurnRate = DAYS_ELAPSED > 0 ? (totalUtilized / DAYS_ELAPSED) : 0;
+        const dailyBurnRate = calcDaysElapsed > 0 ? (totalUtilized / calcDaysElapsed) : 0;
         const fundingCoverage = totalUtilized > 0 ? (state.sponsorship / totalUtilized) : (state.sponsorship > 0 ? 999 : 0);
         const cashRunway = dailyBurnRate > 0 ? (state.sponsorship / dailyBurnRate) : 0;
 
