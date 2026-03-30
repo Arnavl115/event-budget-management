@@ -66,14 +66,32 @@ body {
     color: #f43f5e !important;
 }
 
-#configModal,
-#expenseModal,
-#resourceModal {
-    background-color: color-mix(in srgb, var(--bg-black) 98%, transparent) !important;
+/* iOS Liquid Glass Effect for Modals and Overlays */
+#auth-overlay, #configModal, #expenseModal, #resourceModal, #assetModal, 
+#teamModal, #templateModal, #partnerModal, #chartExpandedModal, #kpiInfoModal {
+    background-color: rgba(0, 0, 0, 0.35) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(180%) !important; /* For Safari */
 }
 
-.backdrop-blur-md {
-    backdrop-filter: blur(12px) brightness(1.1) !important;
+/* Make modal inner windows highly rounded and glassy */
+#auth-overlay > div,
+#configModal > div,
+#expenseModal > div,
+#resourceModal > div,
+#assetModal > div,
+#teamModal > div,
+#templateModal > div,
+#partnerModal > div,
+#chartExpandedModal > div,
+#kpiInfoModal > div,
+div[id="react-calculator-root"] > div {
+    background: color-mix(in srgb, var(--card-gray) 65%, transparent) !important;
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border-radius: 28px !important;
+    border: 1px solid color-mix(in srgb, var(--text-main) 15%, transparent) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
 .nav-btn.active {

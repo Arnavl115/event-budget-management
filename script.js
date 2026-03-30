@@ -1,4 +1,3 @@
-// --- Firebase Config & Auth Management ---
 const firebaseConfig = {
     apiKey: "AIzaSyA0lWt-z6pVY1JrZ2AsYAtAbUdosM-Fx74",
     authDomain: "eventpro-64f68.firebaseapp.com",
@@ -413,19 +412,25 @@ function updateDashboard() {
         const cashRunway = dailyBurnRate > 0 ? (state.sponsorship / dailyBurnRate) : 0;
         
         const kpis = [
-            { l: 'Budget Limit', v: '₹' + state.totalBudgetLimit.toLocaleString('en-IN') },
-            { l: 'Capital Utilized', v: '₹' + totalUtilized.toLocaleString('en-IN') },
-            { l: 'Projected Final Cost', v: '₹' + Math.round(forecast).toLocaleString('en-IN'), u: forecast > state.totalBudgetLimit },
-            { l: 'Budget Variance', v: Math.abs(variance).toFixed(1) + '%', u: variance < 0 },
-            { l: 'Sponsorship', v: '₹' + state.sponsorship.toLocaleString('en-IN') },
-            { l: 'Net Available', v: '₹' + Math.abs(balance).toLocaleString('en-IN'), u: balance < 0 },
-            { l: 'Funding Coverage', v: fundingCoverage > 900 ? '∞' : fundingCoverage.toFixed(2) + 'x', u: fundingCoverage < 1 },
-            { l: 'Cash Runway', v: cashRunway > 0 ? Math.round(cashRunway) + ' Days' : 'N/A', u: cashRunway < 30 }
+            { id: 'kpi-limit', l: 'Budget Limit', v: '₹' + state.totalBudgetLimit.toLocaleString('en-IN'), d: 'The maximum total authorized spending limit allocated for the entire event.', c: 'System Configuration or Template Preset' },
+            { id: 'kpi-utilized', l: 'Capital Utilized', v: '₹' + totalUtilized.toLocaleString('en-IN'), d: 'The total amount of money actually spent or committed across all categories.', c: 'Sum(All Ledger Transactions)' },
+            { id: 'kpi-forecast', l: 'Projected Final Cost', v: '₹' + Math.round(forecast).toLocaleString('en-IN'), u: forecast > state.totalBudgetLimit, d: 'The estimated total cost of the event at completion based on current daily spending trends.', c: '(Total Utilized ÷ Days Elapsed) × Total Event Days' },
+            { id: 'kpi-variance', l: 'Budget Variance', v: Math.abs(variance).toFixed(1) + '%', u: variance < 0, d: 'The percentage difference between the assigned Budget Limit and the Projected Final Cost. Negative values indicate overspending.', c: '((Budget Limit - Projected Final Cost) ÷ Budget Limit) × 100%' },
+            { id: 'kpi-sponsor', l: 'Sponsorship', v: '₹' + state.sponsorship.toLocaleString('en-IN'), d: 'Total external funding, sponsorships, or revenue secured for the event.', c: 'System Configuration or Template Preset' },
+            { id: 'kpi-net', l: 'Net Available', v: '₹' + Math.abs(balance).toLocaleString('en-IN'), u: balance < 0, d: 'The remaining unspent capital left from the authorized Budget Limit.', c: 'Budget Limit - Capital Utilized' },
+            { id: 'kpi-coverage', l: 'Funding Coverage', v: fundingCoverage > 900 ? '∞' : fundingCoverage.toFixed(2) + 'x', u: fundingCoverage < 1, d: 'Indicates how many times current expenses can be covered completely by available sponsorships.', c: 'Total Sponsorship ÷ Capital Utilized' },
+            { id: 'kpi-runway', l: 'Cash Runway', v: cashRunway > 0 ? Math.round(cashRunway) + ' Days' : 'N/A', u: cashRunway < 30, d: 'The estimated number of days before sponsorship funds are completely depleted at the current burn rate.', c: 'Total Sponsorship ÷ Average Daily Spend' }
         ];
+
+        window.kpiDataStore = kpis.reduce((acc, k) => { acc[k.id] = k; return acc; }, {});
+
         kpiContainer.innerHTML = kpis.map(k => `
-            <div class="minimal-card p-4 md:p-6 rounded-sm">
-                <p class="text-neutral-500 text-[10px] md:text-xs font-black uppercase tracking-widest mb-2">${k.l}</p>
-                <h3 class="text-xl md:text-2xl font-black ${k.u ? 'text-red-500' : 'text-white'}">${k.v}</h3>
+            <div class="minimal-card p-4 md:p-6 rounded-sm cursor-pointer hover:border-white transition-all group" onclick="openKpiModal('${k.id}')">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-neutral-500 text-[10px] md:text-xs font-black uppercase tracking-widest">${k.l}</p>
+                    <i data-lucide="info" class="w-3 h-3 text-neutral-700 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl md:text-2xl font-black ${k.u ? 'text-red-500' : 'text-white'} group-hover:scale-[1.02] transform transition-transform origin-left">${k.v}</h3>
             </div>
         `).join('');
     }
@@ -686,6 +691,29 @@ function openExpandedChart(chartKey, title) {
 
 function closeExpandedChart() {
     const m = document.getElementById('chartExpandedModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+    document.body.style.overflow = '';
+}
+
+function openKpiModal(id) {
+    const kpi = window.kpiDataStore[id];
+    if (!kpi) return;
+    document.getElementById('kpiModalTitle').innerText = kpi.l;
+    document.getElementById('kpiModalValue').innerText = kpi.v;
+    document.getElementById('kpiModalValue').className = `text-xl font-black mb-8 border-b border-neutral-900 pb-6 ${kpi.u ? 'text-red-500' : 'text-neutral-400'}`;
+    document.getElementById('kpiModalDesc').innerText = kpi.d;
+    document.getElementById('kpiModalCalc').innerText = kpi.c;
+    
+    const m = document.getElementById('kpiInfoModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    if(window.lucide) window.lucide.createIcons();
+}
+
+function closeKpiModal() {
+    const m = document.getElementById('kpiInfoModal');
     m.classList.add('hidden');
     m.classList.remove('flex');
     document.body.style.overflow = '';
@@ -992,32 +1020,5 @@ function importFromWorkbook(workbook) {
     if (parsedExpenses.length) state.expenses = parsedExpenses;
 
     populateConfigForm();
-    populateCategorySelects();
     updateDashboard();
-}
-
-function importFromCSV(txt) {
-    // Simple CSV import: assume header Ref,Sector,Description,Value and import as expenses only
-    const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    if (!lines.length) return;
-    const header = lines[0].split(',').map(h => h.trim().toLowerCase());
-    const refIdx = header.indexOf('ref');
-    const sectorIdx = header.indexOf('sector');
-    const descIdx = header.indexOf('description');
-    const valIdx = header.findIndex(h => h.includes('value') || h.includes('amount'));
-    const parsedExpenses = [];
-    for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split(',');
-        const ref = cols[refIdx] || '';
-        const sector = cols[sectorIdx] || 'Unk';
-        const desc = cols[descIdx] || '';
-        const val = parseFloat((cols[valIdx] || '').replace(/[^0-9.-]/g, '')) || 0;
-        if (!ref && !sector && !desc && !val) continue;
-        const idStr = ref.toString().replace(/^REF-?/i, '').trim() || Math.floor(100+Math.random()*899).toString();
-        parsedExpenses.push({ id: idStr, category: sector, desc, amount: val });
-    }
-    if (parsedExpenses.length) {
-        state.expenses = parsedExpenses;
-        updateDashboard();
-    }
 }
