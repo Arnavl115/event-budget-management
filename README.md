@@ -48,3 +48,17 @@ If you're looking to fork or contribute, here are bleeding-edge ideas to push Ev
 1. **WebSockets for Multi-Agent Sync**: Currently, EventPro handles local state flawlessly. Plugging the central `state` object into a Socket.io backend or Firebase Realtime Database would allow a Lighting Director and a Finance Director to live-edit the same dashboard matrix concurrently.
 2. **AI Invoice Parsing OCR**: Imagine uploading a PDF invoice from a vendor directly into the dashboard. Integrating a lightweight WebAssembly OCR scanner (like Tesseract.js) to auto-extract the `<Amount>` and `<Vendor>` and dynamically log it as a transaction inside the Ledger.
 3. **Geo-Fencing Asset Tracking**: Evolving the `Resource Util` page from static cataloging into active RFID. By pinging external Bluetooth beacons, the dashboard could actually tell you if the "Line Array PA System" is currently physically located in the "Main Hall" or the "Loading Bay".
+
+This project — EventPro — was developed as part of our Semester 4 Web Programming course curriculum. It represents our collective effort to apply modern web technologies including HTML, CSS, JavaScript, React, Firebase, and Chart.js to build a comprehensive event budget management system.
+
+With Gratitude
+Prof. Suvidha
+
+We extend our heartfelt gratitude to our esteemed professor, Prof. Suvidha, for her invaluable guidance, mentorship, and constant encouragement throughout the development of this project. Her expertise in web programming and dedication to teaching have been instrumental in shaping our understanding and skills.
+
+Our Institution
+VIT Chennai
+
+Vellore Institute of Technology, Chennai Campus — for providing a world-class academic environment, cutting-edge infrastructure, and a platform that fosters innovation and excellence in technology education.
+
+© 2026 EventPro — Semester 4 Web Programming Project — VIT Chennai
